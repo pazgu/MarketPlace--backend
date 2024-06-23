@@ -1,14 +1,24 @@
 [
-    { "_id": "1", "name": "M4A1", "price": 700, "category": "weapons" },
-    { "_id": "2", "name": "phone", "price": 400, "category": "electronics" },
-    { "_id": "3", "name": "M249", "price": 1000, "category": "weapons" },
-    { "_id": "TPWv1", "name": "AK-47", "price": 100, "category": "weapons" },
-    { "_id": "n1ACQ", "name": "Omer Mazig", "price": 123, "category": "None" },
-    { "_id": "4", "name": "laptop", "price": 1500, "category": "electronics" },
-    { "_id": "5", "name": "desk", "price": 200, "category": "furniture" },
-    { "_id": "6", "name": "chair", "price": 100, "category": "furniture" },
-    { "_id": "7", "name": "monitor", "price": 300, "category": "electronics" },
-    { "_id": "8", "name": "mouse", "price": 50, "category": "electronics" },
-    { "_id": "9", "name": "keyboard", "price": 75, "category": "electronics" },
-    { "_id": "10", "name": "headphones", "price": 120, "category": "electronics" }
+  { "_id": "2", "name": "phone", "price": "500", "category": "electronics" },
+  { "_id": "TPWv1", "name": "AK-47", "price": 100, "category": "weapons" },
+  { "_id": "4", "name": "laptop", "price": 1500, "category": "electronics" },
+  { "_id": "5", "name": "desk", "price": 200, "category": "furniture" },
+  { "_id": "6", "name": "chair", "price": 100, "category": "furniture" },
+  { "_id": "7", "name": "monitor", "price": 300, "category": "electronics" },
+  { "_id": "8", "name": "mouse", "price": 50, "category": "electronics" },
+  { "_id": "9", "name": "keyboard", "price": 75, "category": "electronics" },
+  {
+    "_id": "10",
+    "name": "headphones",
+    "price": 120,
+    "category": "electronics"
+  },
+  { "_id": "345", "name": "glasses", "price": 320, "category": "excessories" },
+  { "_id": "11", "name": "T-shirt", "price": 80, "category": "Clothes" },
+  {
+    "_id": "34554",
+    "name": "computer",
+    "price": 3250,
+    "category": "electronics"
+  }
 ]
