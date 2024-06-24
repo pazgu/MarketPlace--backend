@@ -33,8 +33,7 @@ async function deleteProduct(req, res) {
   let product = null;
   try {
     const { id } = req.params;
-    product = await Product.findById(id).exec();
-    await product.deleteOne({ id });
+    product = await Product.findByIdAndDelete(id).exec();
     res.status(200).json({ message: "Product was deleted" });
   } catch (error) {
     if (!product) {
@@ -45,34 +44,44 @@ async function deleteProduct(req, res) {
 }
 
 async function createProduct(req, res) {
-  const { _id } = req.body;
-
-  const existingProduct = products.find((product) => product._id === _id);
-  if (existingProduct) {
-    return res
-      .status(409)
-      .json({ message: "Product with the same ID already exists" });
+  const productToAdd = req.body;
+  const newProduct = new Product(productToAdd);
+  try {
+    const savedProduct = await newProduct.save();
+    res
+      .status(201)
+      .json({ message: "Product created successfully", savedProduct });
+  } catch (error) {
+    console.log(
+      "product.controller, createProduct. Error while creating product",
+      error
+    );
+    if (err.name === "ValidationError") {
+      console.log(`product.controller, createProduct. ${err.message}`);
+      res.status(400).json({ message: err.message });
+    } else {
+      res.status(500).json({ message: "Server error while creating product" });
+    }
   }
-  const newProduct = req.body;
-  products.push(newProduct);
-  // fs.writeFileSync("./models/data.json", JSON.stringify(products));
-  res
-    .status(201)
-    .json({ message: "Product created successfully", product: newProduct });
 }
 
 async function editProduct(req, res) {
-  const { _id, name, price, category } = req.body;
-  const existingProductIndex = products.findIndex(
-    (product) => product._id === _id
-  );
-  if (existingProductIndex === -1) {
-    return res.status(404).json({ message: "Product not found" });
+  let product = null;
+  try {
+    const { id } = req.params;
+    const { name, price, quantity, category } = req.body;
+    product = await Product.findByIdAndUpdate(
+      id,
+      { name, price, category },
+      { new: true, runValidators: true }
+    ); // validate before updating}).exec();
+    res.status(200).json({ message: "Product was updated" });
+  } catch (error) {
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+    res.status(500).json({ message: error.message });
   }
-  const editedProduct = req.body;
-  products[existingProductIndex] = editedProduct;
-  // fs.writeFileSync("./models/data.json", JSON.stringify(products, null, 2));
-  res.status(200).json({ message: "Product was updated" });
 }
 
 module.exports = {
