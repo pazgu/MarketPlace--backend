@@ -3,15 +3,59 @@
 const Product = require("../models/product.model");
 
 async function getProducts(req, res) {
+  const params = {
+    name: req.query.name,
+    minPrice: req.query.minPrice,
+    maxPrice: req.query.maxPrice,
+    inStock: req.query.inStock,
+    page: req.query.page,
+    limit: req.query.limit,
+  };
+
   try {
-    const products = await Product.find();
-    res.status(200).json(products);
+    const filteredProducts = await filterByParams(params);
+    res.status(200).json(filteredProducts);
   } catch (error) {
     console.log(
       "product.controller, getProducts. Error while getting products",
       error
     );
     res.status(500).json({ message: error.message });
+  }
+}
+
+async function filterByParams(req, res) {
+  const { name, minPrice, maxPrice, inStock, page = 1, limit = 10 } = req.body;
+  let query = {};
+  if (name) {
+    query.name = { $regex: name, $options: "i" };
+  }
+  if (minPrice !== undefined && maxPrice !== undefined) {
+    query.price = { $gte: minPrice, $lte: maxPrice };
+  } else if (minPrice !== undefined) {
+    query.price = { $gte: minPrice };
+  } else if (maxPrice !== undefined) {
+    query.price = { $lte: maxPrice };
+  }
+  if (inStock !== undefined) {
+    query.quantity = inStock ? { $gt: 0 } : { $eq: 0 };
+  }
+  // Calculate the number of documents to skip
+  const skip = (page - 1) * limit;
+  try {
+    const products = await Product.find(query).skip(skip).limit(limit);
+    const total = await Product.countDocuments(query);
+    return {
+      products,
+      total,
+      page,
+      pages: Math.ceil(total / limit),
+    };
+  } catch (error) {
+    console.error(error);
+    res
+      .status(500)
+      .json({ message: "An error occurred while filtering products" });
   }
 }
 
