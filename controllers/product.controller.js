@@ -1,33 +1,51 @@
-const fs = require("fs");
-const products = require("../models/data.json");
+// const fs = require("fs");
+// const products = require("../models/");
+const Product = require("../models/product.model");
 
-function getProducts(req, res) {
-  res.status(200).json(products);
-}
-
-function getProductById(req, res) {
-  const { id } = req.params;
-  const product = products.find((product) => product._id === id);
-  if (!product) {
-    return res.status(404).json({ message: "Product not found" });
+async function getProducts(req, res) {
+  try {
+    const products = await Product.find();
+    res.status(200).json(products);
+  } catch (error) {
+    console.log(
+      "product.controller, getProducts. Error while getting products",
+      error
+    );
+    res.status(500).json({ message: error.message });
   }
-  res.status(200).json(product);
 }
 
-function deleteProduct(req, res) {
-  const { id } = req.params;
-  const productIndex = products.findIndex((product) => product._id === id);
-
-  if (productIndex === -1) {
-    return res.status(404).json({ message: "product not found" });
+async function getProductById(req, res) {
+  let product = null;
+  try {
+    const { id } = req.params;
+    product = await Product.findById(id).exec();
+    res.status(200).json(product);
+  } catch (error) {
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+    res.status(500).json({ message: error.message });
   }
-  products.splice(productIndex, 1);
-  fs.writeFileSync("./models/data.json", JSON.stringify(products));
-  res.status(200).json({ message: "Product was deleted" });
 }
 
-function createProduct(req, res) {
-  const { _id, name, price, category } = req.body;
+async function deleteProduct(req, res) {
+  let product = null;
+  try {
+    const { id } = req.params;
+    product = await Product.findById(id).exec();
+    await product.deleteOne({ id });
+    res.status(200).json({ message: "Product was deleted" });
+  } catch (error) {
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+    res.status(500).json({ message: error.message });
+  }
+}
+
+async function createProduct(req, res) {
+  const { _id } = req.body;
 
   const existingProduct = products.find((product) => product._id === _id);
   if (existingProduct) {
@@ -35,22 +53,15 @@ function createProduct(req, res) {
       .status(409)
       .json({ message: "Product with the same ID already exists" });
   }
-
-  const newProduct = {
-    _id,
-    name,
-    price,
-    category,
-  };
-
+  const newProduct = req.body;
   products.push(newProduct);
-  fs.writeFileSync("./models/data.json", JSON.stringify(products));
+  // fs.writeFileSync("./models/data.json", JSON.stringify(products));
   res
     .status(201)
     .json({ message: "Product created successfully", product: newProduct });
 }
 
-function editProduct(req, res) {
+async function editProduct(req, res) {
   const { _id, name, price, category } = req.body;
   const existingProductIndex = products.findIndex(
     (product) => product._id === _id
@@ -58,14 +69,9 @@ function editProduct(req, res) {
   if (existingProductIndex === -1) {
     return res.status(404).json({ message: "Product not found" });
   }
-  const editedProduct = {
-    _id,
-    name,
-    price,
-    category,
-  };
+  const editedProduct = req.body;
   products[existingProductIndex] = editedProduct;
-  fs.writeFileSync("./models/data.json", JSON.stringify(products, null, 2));
+  // fs.writeFileSync("./models/data.json", JSON.stringify(products, null, 2));
   res.status(200).json({ message: "Product was updated" });
 }
 
