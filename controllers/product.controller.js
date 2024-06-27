@@ -25,20 +25,42 @@ async function getProducts(req, res) {
 }
 
 async function filterByParams(req, res) {
-  const { name, minPrice, maxPrice, inStock, page = 1, limit = 10 } = req.body;
+  const { name, minPrice, maxPrice, inStock, page = 1, limit = 10 } = req;
   let query = {};
-  if (name) {
-    query.name = { $regex: name, $options: "i" };
+  if (name && typeof name === "string") {
+    query.name = { $regex: name.trim(), $options: "i" };
   }
+
   if (minPrice !== undefined && maxPrice !== undefined) {
-    query.price = { $gte: minPrice, $lte: maxPrice };
+    const minPriceNum = parseFloat(minPrice);
+    const maxPriceNum = parseFloat(maxPrice);
+
+    if (!isNaN(minPriceNum) && !isNaN(maxPriceNum)) {
+      query.price = { $gte: minPriceNum, $lte: maxPriceNum };
+    }
   } else if (minPrice !== undefined) {
-    query.price = { $gte: minPrice };
+    const minPriceNum = parseFloat(minPrice);
+    if (!isNaN(minPriceNum)) {
+      query.price = { $gte: minPriceNum };
+    }
   } else if (maxPrice !== undefined) {
-    query.price = { $lte: maxPrice };
+    const maxPriceNum = parseFloat(maxPrice);
+    if (!isNaN(maxPriceNum)) {
+      query.price = { $lte: maxPriceNum };
+    }
   }
+
   if (inStock !== undefined) {
-    query.quantity = inStock ? { $gt: 0 } : { $eq: 0 };
+    const inStockBool = inStock === "true" || inStock === true;
+    const inStockNum = parseInt(inStock, 10);
+
+    if (
+      typeof inStockBool === "boolean" ||
+      inStockNum === 0 ||
+      inStockNum === 1
+    ) {
+      query.quantity = inStockBool ? { $gt: 0 } : { $eq: 0 };
+    }
   }
   // Calculate the number of documents to skip
   const skip = (page - 1) * limit;
@@ -88,8 +110,14 @@ async function deleteProduct(req, res) {
 }
 
 async function createProduct(req, res) {
-  const productToAdd = req.body;
-  const newProduct = new Product(productToAdd);
+  const { name, price, quantity, category } = req.body;
+  const newProduct = new Product({
+    name,
+    price,
+    quantity,
+    category,
+  });
+
   try {
     const savedProduct = await newProduct.save();
     res
@@ -100,9 +128,9 @@ async function createProduct(req, res) {
       "product.controller, createProduct. Error while creating product",
       error
     );
-    if (err.name === "ValidationError") {
-      console.log(`product.controller, createProduct. ${err.message}`);
-      res.status(400).json({ message: err.message });
+    if (error.name === "ValidationError") {
+      console.log(`product.controller, createProduct. ${error.message}`);
+      res.status(400).json({ message: error.message });
     } else {
       res.status(500).json({ message: "Server error while creating product" });
     }
@@ -116,7 +144,7 @@ async function editProduct(req, res) {
     const { name, price, quantity, category } = req.body;
     product = await Product.findByIdAndUpdate(
       id,
-      { name, price, category },
+      { name, price, category, quantity },
       { new: true, runValidators: true }
     ); // validate before updating}).exec();
     res.status(200).json({ message: "Product was updated" });
