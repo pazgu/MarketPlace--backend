@@ -10,6 +10,7 @@ async function getProducts(req, res) {
     inStock: req.query.inStock,
     page: req.query.page,
     limit: req.query.limit,
+    categories: req.query.categories,
   };
 
   try {
@@ -25,7 +26,15 @@ async function getProducts(req, res) {
 }
 
 async function filterByParams(req, res) {
-  const { name, minPrice, maxPrice, inStock, page = 1, limit = 10 } = req;
+  const {
+    name,
+    minPrice,
+    maxPrice,
+    inStock,
+    page = 1,
+    limit = 10,
+    categories,
+  } = req;
   let query = {};
   if (name && typeof name === "string") {
     query.name = { $regex: name.trim(), $options: "i" };
@@ -62,16 +71,25 @@ async function filterByParams(req, res) {
       query.quantity = inStockBool ? { $gt: 0 } : { $eq: 0 };
     }
   }
+
+  if (categories) {
+    const categoriesArray = categories.split(",");
+    query.categories = {
+      $in: categoriesArray.map((cat) => new RegExp(cat, "i")),
+    };
+  }
   // Calculate the number of documents to skip
   const skip = (page - 1) * limit;
   try {
     const products = await Product.find(query).skip(skip).limit(limit);
     const total = await Product.countDocuments(query);
+    const productsCategories = await Product.distinct("categories");
     return {
       products,
       total,
       page,
       pages: Math.ceil(total / limit),
+      categories: productsCategories,
     };
   } catch (error) {
     console.error(error);
@@ -110,12 +128,12 @@ async function deleteProduct(req, res) {
 }
 
 async function createProduct(req, res) {
-  const { name, price, quantity, category } = req.body;
+  const { name, price, quantity, categories } = req.body;
   const newProduct = new Product({
     name,
     price,
     quantity,
-    category,
+    categories,
   });
 
   try {
@@ -141,10 +159,10 @@ async function editProduct(req, res) {
   let product = null;
   try {
     const { id } = req.params;
-    const { name, price, quantity, category } = req.body;
+    const { name, price, quantity, categories } = req.body;
     product = await Product.findByIdAndUpdate(
       id,
-      { name, price, category, quantity },
+      { name, price, categories, quantity },
       { new: true, runValidators: true }
     ); // validate before updating}).exec();
     res.status(200).json({ message: "Product was updated" });

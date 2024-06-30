@@ -4,6 +4,7 @@ const PORT = process.env.PORT || 3000;
 const cors = require("cors");
 const dotenv = require("dotenv");
 const connectDB = require("./config/db");
+const { verifyToken } = require("./middleware/auth.middleware");
 
 dotenv.config(); // Load config
 
@@ -19,7 +20,13 @@ async function main() {
 
   const productsRoutes = require("./routers/product.route");
   const usersRoutes = require("./routers/user.route");
-  
+  // auth routes
+  const authRoutes = require("./routes/auth.route");
+  const protectedRoutes = require("./routes/protected.route");
+
+  app.use("/api/auth", authRoutes);
+  app.use("/api/protected", verifyToken, protectedRoutes);
+
   app.use("/api/products", productsRoutes);
   app.use("/api/users", usersRoutes);
 
