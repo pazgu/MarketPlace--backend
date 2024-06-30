@@ -18,7 +18,10 @@ async function main() {
   );
 
   const productsRoutes = require("./routers/product.route");
+  const usersRoutes = require("./routers/user.route");
+  
   app.use("/api/products", productsRoutes);
+  app.use("/api/users", usersRoutes);
 
   app.listen(PORT, () => console.log(`app runing on port ${PORT}`));
 }
