@@ -21,8 +21,8 @@ async function main() {
   const productsRoutes = require("./routers/product.route");
   const usersRoutes = require("./routers/user.route");
   // auth routes
-  const authRoutes = require("./routes/auth.route");
-  const protectedRoutes = require("./routes/protected.route");
+  const authRoutes = require("./routers/auth.route");
+  const protectedRoutes = require("./routers/protected.route");
 
   app.use("/api/auth", authRoutes);
   app.use("/api/protected", verifyToken, protectedRoutes);
