@@ -126,12 +126,15 @@ async function deleteProduct(req, res) {
 }
 
 async function createProduct(req, res) {
-  const { name, price, quantity, categories } = req.body;
+  const { name, price, quantity, categories, user } = req.body;
+  console.log(req.header);
   const newProduct = new Product({
     name,
     price,
     quantity,
     categories,
+    image: "https://picsum.photos/200/300?random=1",
+    user,
   });
 
   try {
