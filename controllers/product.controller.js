@@ -1,5 +1,3 @@
-// const fs = require("fs");
-// const products = require("../models/");
 const Product = require("../models/product.model");
 
 async function getProducts(req, res) {
