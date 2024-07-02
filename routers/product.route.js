@@ -1,5 +1,8 @@
 const express = require("express");
-const { verifyToken } = require("../middleware/auth.middleware");
+const {
+  verifyToken,
+  authorizeProductOwner,
+} = require("../middleware/auth.middleware");
 
 const {
   getProducts,
@@ -16,7 +19,7 @@ router.get("/", getProducts);
 router.get("/myProducts", verifyToken, getUserProducts);
 router.get("/:id", getProductById);
 router.post("/create", verifyToken, createProduct);
-router.delete("/:id", deleteProduct);
-router.put("/:id", editProduct);
+router.delete("/:id", verifyToken, authorizeProductOwner, deleteProduct);
+router.put("/:id", verifyToken, authorizeProductOwner, editProduct);
 
 module.exports = router;

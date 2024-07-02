@@ -172,7 +172,7 @@ async function editProduct(req, res) {
       id,
       { name, price, categories, quantity },
       { new: true, runValidators: true }
-    ); // validate before updating}).exec();
+    );
     res.status(200).json({ message: "Product was updated" });
   } catch (error) {
     if (!product) {
