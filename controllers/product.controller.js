@@ -145,7 +145,6 @@ async function createProduct(req, res) {
       { $push: { products: savedProduct._id } },
       { new: true, useFindAndModify: false }
     );
-    console.log(user.products);
     res
       .status(201)
       .json({ message: "Product created successfully", savedProduct });
@@ -167,10 +166,10 @@ async function editProduct(req, res) {
   let product = null;
   try {
     const { id } = req.params;
-    const { name, price, quantity, categories } = req.body;
+    const { name, price, quantity, categories, user } = req.body;
     product = await Product.findByIdAndUpdate(
       id,
-      { name, price, categories, quantity },
+      { name, price, categories, quantity, user },
       { new: true, runValidators: true }
     );
     res.status(200).json({ message: "Product was updated" });
