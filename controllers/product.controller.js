@@ -1,4 +1,5 @@
 const Product = require("../models/product.model");
+const User = require("../models/user.model");
 
 async function getProducts(req, res) {
   const params = {
@@ -127,7 +128,6 @@ async function deleteProduct(req, res) {
 
 async function createProduct(req, res) {
   const { name, price, quantity, categories, user } = req.body;
-  console.log(req.header);
   const newProduct = new Product({
     name,
     price,
@@ -139,6 +139,13 @@ async function createProduct(req, res) {
 
   try {
     const savedProduct = await newProduct.save();
+    // Update the user's product array
+    await User.findByIdAndUpdate(
+      user,
+      { $push: { products: savedProduct._id } },
+      { new: true, useFindAndModify: false }
+    );
+    console.log(user.products);
     res
       .status(201)
       .json({ message: "Product created successfully", savedProduct });
@@ -175,10 +182,27 @@ async function editProduct(req, res) {
   }
 }
 
+async function getUserProducts(req, res) {
+  try {
+    const userId = req.userId;
+    const user = await User.findById(userId).populate("products");
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.status(200).json({ products: user.products });
+  } catch (error) {
+    console.error("Error fetching user products:", error);
+    res
+      .status(500)
+      .json({ message: "Server error while fetching user products" });
+  }
+}
+
 module.exports = {
   getProducts,
   getProductById,
   deleteProduct,
   createProduct,
   editProduct,
+  getUserProducts,
 };
